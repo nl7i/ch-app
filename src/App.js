@@ -10,6 +10,7 @@ function App() {
   const [genIsClose, setGenIsClose] = useState(true);
   const [theme, setTheme] = useState('light');
   const [delay, setDelay] = useState(100);
+  const [cardCount, setCardCount] = useState(0);
   const [filter, setFilter] = useState('CVV');
   const [checked, setChecked] = useState([]);
   const [genFields, setGenFields] = useState({
@@ -25,9 +26,10 @@ function App() {
   const skField = useRef(null);
   const skSaved = useRef(localStorage.getItem('sk'));
   const themeSaved = useRef(localStorage.getItem('theme'));
+  const hostname = useRef(window.location.hostname);
   
   useEffect(() => {
-    socket.current = new WebSocket("ws://localhost:8080");
+    socket.current = new WebSocket(`ws://${hostname.current}:8080`);
     
     socket.current.onopen = () => {
       console.log("WebSocket is connected.");
@@ -47,6 +49,7 @@ function App() {
         cardArr.splice(index , 1);
       }
       cardField.current.value = cardArr.join("\n");
+      updateCount();
     }
   }, []);
   
@@ -75,9 +78,15 @@ function App() {
     setChecked(filtArr);
   };
   
+  const updateCount = () => {
+    const toArr = cardField.current.value.replace(" ","").split("\n");
+    const filtArr = toArr.filter(item => item.length > 1);
+    setCardCount(filtArr.length);
+  };
+  
   return <div className={theme}>
   <div className="bg-gray-100 dark:bg-slate-900 min-h-screen">
-    <Generator isClose={genIsClose} setIsClose={setGenIsClose} fields={genFields} setFields={setGenFields} gen={gen} cardField={cardField} />
+    <Generator isClose={genIsClose} setIsClose={setGenIsClose} fields={genFields} setFields={setGenFields} gen={gen} cardField={cardField} updateCount={updateCount} />
     <Header theme={theme} setTheme={setTheme}/>
     <div className="grid sm:grid-rows-2 sm:grid-flow-col gap-6 p-6">
     
@@ -86,9 +95,9 @@ function App() {
         <div className="p-2 mt-4 sm:mt-6">
           <div className="flex space-x-1 text-gray-800">
             <BsFillCreditCard2FrontFill className="text-xl dark:text-gray-300"/>
-            <div className="text-sm font-medium dark:text-gray-300">Generated cards:</div>
+            <div className="text-sm font-medium dark:text-gray-300">Generated cards: {cardCount}</div>
           </div>
-          <textarea className="w-full h-32 rounded-md p-2 bg-gray-100 text-sm px-4 placeholder-gray-600 outline-none dark:bg-slate-900 dark:text-gray-200 dark:placeholder-gray-400" placeholder="xxxxxx|xx|xxxx|xxx" ref={cardField} />
+          <textarea className="w-full h-32 rounded-md p-2 bg-gray-100 text-sm px-4 placeholder-gray-600 outline-none dark:bg-slate-900 dark:text-gray-200 dark:placeholder-gray-400" placeholder="xxxxxx|xx|xxxx|xxx" ref={cardField} onChange={updateCount}/>
         </div>
         <div className="flex items-center px-2">
           <input className="h-[35px] rounded-md p-2 bg-gray-100 text-sm placeholder-gray-600 px-4 outline-none scrollbar-hide w-[80%] dark:bg-slate-900 dark:text-gray-200 dark:placeholder-gray-400" placeholder="sk_live_xxxxxxxxxxx" ref={skField}/>

@@ -1,6 +1,6 @@
 
 
-const Component = ({isClose, setIsClose, fields, setFields, gen, cardField}) => {
+const Component = ({isClose, setIsClose, fields, setFields, gen, cardField, updateCount}) => {
   const updateFields = (e) => {
     const cpObj = {...fields};
     cpObj[e.target.name] = e.target.value;
@@ -10,6 +10,7 @@ const Component = ({isClose, setIsClose, fields, setFields, gen, cardField}) => 
   const updateGenerated = () => {
     const genArr = gen(fields);
     cardField.current.value = genArr.join("\n");
+    updateCount();
   };
   
   return <>
